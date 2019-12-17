@@ -16,11 +16,8 @@ import (
 	"time"
 
 	"github.com/adnanh/webhook/hook"
-
-	"github.com/codegangsta/negroni"
-	"github.com/gorilla/mux"
-	uuid "github.com/satori/go.uuid"
-
+	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/middleware"
 	fsnotify "gopkg.in/fsnotify.v1"
 )
 
@@ -167,53 +164,29 @@ func main() {
 		go watchForFileChange()
 	}
 
-	l := negroni.NewLogger()
+	r := chi.NewRouter()
 
-	l.SetFormat("{{.Status}} | {{.Duration}} | {{.Hostname}} | {{.Method}} {{.Path}} \n")
+	r.Use(RequestID)
+	r.Use(NewLogger())
+	r.Use(middleware.Recoverer)
+	// r.Use(middleware.Heartbeat("/"))
 
-	standardLogger := log.New(os.Stdout, "[webhook] ", log.Ldate|log.Ltime)
+	hooksURL := makeURL(hooksURLPrefix)
 
-	if !*verbose {
-		standardLogger.SetOutput(ioutil.Discard)
-	}
-
-	l.ALogger = standardLogger
-
-	negroniRecovery := &negroni.Recovery{
-		Logger:     l.ALogger,
-		PrintStack: true,
-		StackAll:   false,
-		StackSize:  1024 * 8,
-	}
-
-	n := negroni.New(negroniRecovery, l)
-
-	router := mux.NewRouter()
-
-	var hooksURL string
-
-	if *hooksURLPrefix == "" {
-		hooksURL = "/{id}"
-	} else {
-		hooksURL = "/" + *hooksURLPrefix + "/{id}"
-	}
-
-	router.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
+	r.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
 		fmt.Fprint(w, "OK")
 	})
 
-	router.HandleFunc(hooksURL, hookHandler)
-
-	n.UseHandler(router)
+	r.HandleFunc(hooksURL, hookHandler)
 
 	if !*secure {
 		log.Printf("serving hooks on http://%s:%d%s", *ip, *port, hooksURL)
-		log.Fatal(http.ListenAndServe(fmt.Sprintf("%s:%d", *ip, *port), n))
+		log.Fatal(http.ListenAndServe(fmt.Sprintf("%s:%d", *ip, *port), r))
 	}
 
 	svr := &http.Server{
 		Addr:    fmt.Sprintf("%s:%d", *ip, *port),
-		Handler: n,
+		Handler: r,
 		TLSConfig: &tls.Config{
 			CipherSuites:             getTLSCipherSuites(*tlsCipherSuites),
 			CurvePreferences:         []tls.CurveID{tls.CurveP521, tls.CurveP384, tls.CurveP256},
@@ -229,7 +202,7 @@ func main() {
 
 func hookHandler(w http.ResponseWriter, r *http.Request) {
 	// generate a request id for logging
-	rid := uuid.NewV4().String()[:6]
+	rid := GetReqID(r.Context())
 
 	log.Printf("[%s] incoming HTTP request from %s\n", rid, r.RemoteAddr)
 
@@ -237,7 +210,7 @@ func hookHandler(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set(responseHeader.Name, responseHeader.Value)
 	}
 
-	id := mux.Vars(r)["id"]
+	id := chi.URLParam(r, "id")
 
 	if matchedHook := matchLoadedHook(id); matchedHook != nil {
 		log.Printf("[%s] %s got matched\n", rid, id)
@@ -574,4 +547,12 @@ func valuesToMap(values map[string][]string) map[string]interface{} {
 	}
 
 	return ret
+}
+
+// makeURL builds a hook URL with or without a prefix.
+func makeURL(prefix *string) string {
+	if prefix == nil || *prefix == "" {
+		return "/{id}"
+	}
+	return "/" + *prefix + "/{id}"
 }
