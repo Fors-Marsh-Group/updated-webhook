@@ -1,4 +1,4 @@
-package main
+package middleware
 
 // Ported from Chi to use UUID
 // github.com/go-chi/chi/middleware/request_id.go

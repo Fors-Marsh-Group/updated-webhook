@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/adnanh/webhook/hook"
+	mw "github.com/adnanh/webhook/middleware"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	fsnotify "gopkg.in/fsnotify.v1"
@@ -166,8 +167,8 @@ func main() {
 
 	r := chi.NewRouter()
 
-	r.Use(RequestID)
-	r.Use(NewLogger())
+	r.Use(mw.RequestID)
+	r.Use(mw.NewLogger())
 	r.Use(middleware.Recoverer)
 	// r.Use(middleware.Heartbeat("/"))
 
@@ -202,7 +203,7 @@ func main() {
 
 func hookHandler(w http.ResponseWriter, r *http.Request) {
 	// generate a request id for logging
-	rid := GetReqID(r.Context())
+	rid := mw.GetReqID(r.Context())
 
 	log.Printf("[%s] incoming HTTP request from %s\n", rid, r.RemoteAddr)
 
