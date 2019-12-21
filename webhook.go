@@ -16,9 +16,9 @@ import (
 	"time"
 
 	"github.com/adnanh/webhook/hook"
-	mw "github.com/adnanh/webhook/middleware"
+	"github.com/adnanh/webhook/middleware"
 	"github.com/go-chi/chi"
-	"github.com/go-chi/chi/middleware"
+	chimiddleware "github.com/go-chi/chi/middleware"
 	fsnotify "gopkg.in/fsnotify.v1"
 )
 
@@ -30,6 +30,7 @@ var (
 	ip                 = flag.String("ip", "0.0.0.0", "ip the webhook should serve hooks on")
 	port               = flag.Int("port", 9000, "port the webhook should serve hooks on")
 	verbose            = flag.Bool("verbose", false, "show verbose output")
+	debug              = flag.Bool("debug", false, "show debug output")
 	noPanic            = flag.Bool("nopanic", false, "do not panic if hooks cannot be loaded when webhook is not running in verbose mode")
 	hotReload          = flag.Bool("hotreload", false, "watch hooks file for changes and reload them automatically")
 	hooksURLPrefix     = flag.String("urlprefix", "hooks", "url prefix to use for served hooks (protocol://yourserver:port/PREFIX/:hook-id)")
@@ -41,6 +42,8 @@ var (
 	justListCiphers    = flag.Bool("list-cipher-suites", false, "list available TLS cipher suites")
 	tlsMinVersion      = flag.String("tls-min-version", "1.2", "minimum TLS version (1.0, 1.1, 1.2, 1.3)")
 	tlsCipherSuites    = flag.String("cipher-suites", "", "comma-separated list of supported TLS cipher suites")
+	useXRequestID      = flag.Bool("x-request-id", false, "use X-Request-Id header as request ID if present")
+	xRequestIDLimit    = flag.Int("x-request-id-limit", 0, "truncate X-Request-Id header to limit; default is no limit")
 
 	responseHeaders hook.ResponseHeaders
 	hooksFiles      hook.HooksFiles
@@ -167,10 +170,15 @@ func main() {
 
 	r := chi.NewRouter()
 
-	r.Use(mw.RequestID)
-	r.Use(mw.NewLogger())
-	r.Use(middleware.Recoverer)
-	// r.Use(middleware.Heartbeat("/"))
+	r.Use(middleware.RequestID(
+		middleware.UseXRequestIDHeaderOption(*useXRequestID),
+		middleware.RequestIDLimitOption(*xRequestIDLimit),
+	))
+	r.Use(middleware.NewLogger())
+	r.Use(chimiddleware.Recoverer)
+	if *debug {
+		r.Use(middleware.Dumper(log.Writer()))
+	}
 
 	hooksURL := makeURL(hooksURLPrefix)
 
@@ -194,7 +202,7 @@ func main() {
 			MinVersion:               getTLSMinVersion(*tlsMinVersion),
 			PreferServerCipherSuites: true,
 		},
-		TLSNextProto: make(map[string]func(*http.Server, *tls.Conn, http.Handler), 0), // disable http/2
+		TLSNextProto: make(map[string]func(*http.Server, *tls.Conn, http.Handler)), // disable http/2
 	}
 
 	log.Printf("serving hooks on https://%s:%d%s", *ip, *port, hooksURL)
@@ -203,7 +211,7 @@ func main() {
 
 func hookHandler(w http.ResponseWriter, r *http.Request) {
 	// generate a request id for logging
-	rid := mw.GetReqID(r.Context())
+	rid := middleware.GetReqID(r.Context())
 
 	log.Printf("[%s] incoming HTTP request from %s\n", rid, r.RemoteAddr)
 
