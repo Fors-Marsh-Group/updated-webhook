@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/dustin/go-humanize"
 	"github.com/go-chi/chi/middleware"
 )
 
@@ -44,7 +45,7 @@ func (l *LogEntry) Write(status, bytes int, elapsed time.Duration) {
 		fmt.Fprintf(l.buf, "[%s] ", rid)
 	}
 
-	fmt.Fprintf(l.buf, "%03d | %dB | %s | ", status, bytes, elapsed)
+	fmt.Fprintf(l.buf, "%03d | %s | %s | ", status, humanize.IBytes(uint64(bytes)), elapsed)
 	l.buf.WriteString(l.req.Host + " | " + l.req.Method + " " + l.req.RequestURI)
 	log.Print(l.buf.String())
 }
