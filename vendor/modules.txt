@@ -4,10 +4,8 @@ github.com/codegangsta/negroni
 github.com/ghodss/yaml
 # github.com/gofrs/uuid v3.2.0+incompatible
 github.com/gofrs/uuid
-# github.com/gorilla/context v1.1.1
-github.com/gorilla/context
-# github.com/gorilla/mux v1.5.1-0.20171008214913-bdd5a5a1b0b4
-github.com/gorilla/mux
+# github.com/julienschmidt/httprouter v1.3.0
+github.com/julienschmidt/httprouter
 # golang.org/x/sys v0.0.0-20171006175012-ebfc5b463182
 golang.org/x/sys/unix
 # gopkg.in/fsnotify.v1 v1.4.2

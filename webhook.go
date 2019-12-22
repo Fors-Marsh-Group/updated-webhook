@@ -18,7 +18,7 @@ import (
 	"github.com/adnanh/webhook/hook"
 	"github.com/codegangsta/negroni"
 	"github.com/gofrs/uuid"
-	"github.com/gorilla/mux"
+	"github.com/julienschmidt/httprouter"
 	fsnotify "gopkg.in/fsnotify.v1"
 )
 
@@ -186,23 +186,23 @@ func main() {
 
 	n := negroni.New(negroniRecovery, l)
 
-	router := mux.NewRouter()
+	r := httprouter.New()
 
 	var hooksURL string
 
 	if *hooksURLPrefix == "" {
-		hooksURL = "/{id}"
+		hooksURL = "/:id"
 	} else {
-		hooksURL = "/" + *hooksURLPrefix + "/{id}"
+		hooksURL = "/" + *hooksURLPrefix + "/:id"
 	}
 
-	router.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
+	r.GET("/", func(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {
 		fmt.Fprint(w, "OK")
 	})
 
-	router.HandleFunc(hooksURL, hookHandler)
+	r.HandlerFunc("POST", hooksURL, hookHandler)
 
-	n.UseHandler(router)
+	n.UseHandler(r)
 
 	if !*secure {
 		log.Printf("serving hooks on http://%s:%d%s", *ip, *port, hooksURL)
@@ -243,7 +243,7 @@ func hookHandler(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set(responseHeader.Name, responseHeader.Value)
 	}
 
-	id := mux.Vars(r)["id"]
+	id := httprouter.ParamsFromContext(r.Context()).ByName("id")
 
 	if matchedHook := matchLoadedHook(id); matchedHook != nil {
 		log.Printf("[%s] %s got matched\n", rid, id)
