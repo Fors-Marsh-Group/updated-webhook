@@ -16,7 +16,7 @@ import (
 	"time"
 
 	"github.com/adnanh/webhook/hook"
-	"github.com/adnanh/webhook/middleware"
+	"github.com/adnanh/webhook/internal/middleware"
 	"github.com/go-chi/chi"
 	chimiddleware "github.com/go-chi/chi/middleware"
 	fsnotify "gopkg.in/fsnotify.v1"
