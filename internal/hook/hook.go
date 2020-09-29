@@ -3,7 +3,7 @@ package hook
 import (
 	"bytes"
 	"crypto/hmac"
-	"crypto/sha1"
+	"crypto/sha1" // nolint:gosec // ack, but some services (like Github) still use it
 	"crypto/sha256"
 	"crypto/sha512"
 	"crypto/subtle"
