@@ -28,7 +28,7 @@ enable = [
   "goimports",
   "golint",
   "goprintffuncname",
-  # "gosec",
+  "gosec",
   "interfacer",
   # "lll",
   "maligned",
@@ -40,7 +40,6 @@ enable = [
   "unparam",
   "whitespace",
   # "wsl",
-  # "nestif",
 
   ## Maybe? These will take some work
   # "funlen",
@@ -48,6 +47,7 @@ enable = [
   # "gocritic",
   # "gocyclo",
   # "gofumpt",
+  # "nestif",
 
   ## Don't enable
   # "depguard",
@@ -101,6 +101,9 @@ enable = [
 
 
 [issues]
+
+  max-issues-per-linter = 0
+  max-same-issues = 0
 
   [[issues.exclude-rules]]
   path = "_test\\.go"
