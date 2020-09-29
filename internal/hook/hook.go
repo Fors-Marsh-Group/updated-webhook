@@ -390,7 +390,6 @@ func GetParameter(s string, params interface{}) (interface{}, error) {
 	case reflect.Slice:
 		paramsValueSliceLength := paramsValue.Len()
 		if paramsValueSliceLength > 0 {
-
 			if p := strings.SplitN(s, ".", 2); len(p) > 1 {
 				index, err := strconv.ParseUint(p[0], 10, 64)
 
@@ -595,7 +594,7 @@ func (h *Hook) ParseJSONParameters(r *Request) []error {
 		} else {
 			var newArg map[string]interface{}
 
-			decoder := json.NewDecoder(strings.NewReader(string(arg)))
+			decoder := json.NewDecoder(strings.NewReader(arg))
 			decoder.UseNumber()
 
 			err := decoder.Decode(&newArg)
@@ -723,7 +722,7 @@ func (h *Hook) ExtractCommandArgumentsForFile(r *Request) ([]FileParameter, []er
 			if err != nil {
 				log.Printf("error decoding string [%s]", err)
 			}
-			fileContent = []byte(dec)
+			fileContent = dec
 		} else {
 			fileContent = []byte(arg)
 		}
