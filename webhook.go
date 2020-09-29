@@ -558,8 +558,7 @@ func hookHandler(w http.ResponseWriter, r *http.Request) {
 				fmt.Fprint(w, response)
 			}
 		} else {
-			// TODO(moorereason): handle and log errors from goroutine.
-			go handleHook(matchedHook, req) // nolint:errcheck
+			go handleHook(matchedHook, req) // nolint:errcheck // TODO: goroutine error handling
 
 			// Check if a success return code is configured for the hook
 			if matchedHook.SuccessHTTPResponseCode != 0 {

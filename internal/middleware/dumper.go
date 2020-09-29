@@ -46,9 +46,7 @@ func Dumper(w io.Writer) func(http.Handler) http.Handler {
 				buf.WriteString(sc.Text() + "\n")
 			}
 
-			// TODO(moorereason): find a way to handle and surface an error from
-			// Write().
-			w.Write(buf.Bytes()) // nolint:errcheck
+			w.Write(buf.Bytes()) // nolint:errcheck // TODO: find a way to handle and surface errors.
 
 			buf.Reset()
 
@@ -83,9 +81,7 @@ func Dumper(w io.Writer) func(http.Handler) http.Handler {
 				}
 			}
 
-			// TODO(moorereason): find a way to handle and surface an error from
-			// Write().
-			w.Write(buf.Bytes()) // nolint:errcheck
+			w.Write(buf.Bytes()) // nolint:errcheck // TODO: find a way to handle and surface errors.
 		})
 	}
 }
