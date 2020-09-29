@@ -591,40 +591,41 @@ func (h *Hook) ParseJSONParameters(r *Request) []error {
 		arg, err := h.JSONStringParameters[i].Get(r)
 		if err != nil {
 			errors = append(errors, &ArgumentError{h.JSONStringParameters[i]})
+			continue
+		}
+
+		var newArg map[string]interface{}
+
+		decoder := json.NewDecoder(strings.NewReader(arg))
+		decoder.UseNumber()
+
+		err = decoder.Decode(&newArg)
+		if err != nil {
+			errors = append(errors, &ParseError{err})
+			continue
+		}
+
+		var source *map[string]interface{}
+
+		switch h.JSONStringParameters[i].Source {
+		case SourceHeader:
+			source = &r.Headers
+		case SourcePayload:
+			source = &r.Payload
+		case SourceQuery, SourceQueryAlias:
+			source = &r.Query
+		}
+
+		if source != nil {
+			key := h.JSONStringParameters[i].Name
+
+			if h.JSONStringParameters[i].Source == SourceHeader {
+				key = textproto.CanonicalMIMEHeaderKey(h.JSONStringParameters[i].Name)
+			}
+
+			ReplaceParameter(key, source, newArg)
 		} else {
-			var newArg map[string]interface{}
-
-			decoder := json.NewDecoder(strings.NewReader(arg))
-			decoder.UseNumber()
-
-			err := decoder.Decode(&newArg)
-			if err != nil {
-				errors = append(errors, &ParseError{err})
-				continue
-			}
-
-			var source *map[string]interface{}
-
-			switch h.JSONStringParameters[i].Source {
-			case SourceHeader:
-				source = &r.Headers
-			case SourcePayload:
-				source = &r.Payload
-			case SourceQuery, SourceQueryAlias:
-				source = &r.Query
-			}
-
-			if source != nil {
-				key := h.JSONStringParameters[i].Name
-
-				if h.JSONStringParameters[i].Source == SourceHeader {
-					key = textproto.CanonicalMIMEHeaderKey(h.JSONStringParameters[i].Name)
-				}
-
-				ReplaceParameter(key, source, newArg)
-			} else {
-				errors = append(errors, &SourceError{h.JSONStringParameters[i]})
-			}
+			errors = append(errors, &SourceError{h.JSONStringParameters[i]})
 		}
 	}
 
