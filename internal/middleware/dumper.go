@@ -46,7 +46,10 @@ func Dumper(w io.Writer) func(http.Handler) http.Handler {
 				buf.WriteString(sc.Text() + "\n")
 			}
 
-			w.Write(buf.Bytes())
+			// TODO(moorereason): find a way to handle and surface an error from
+			// Write().
+			w.Write(buf.Bytes()) // nolint:errcheck
+
 			buf.Reset()
 
 			// Dump Response
@@ -79,7 +82,10 @@ func Dumper(w io.Writer) func(http.Handler) http.Handler {
 					buf.WriteString(sc.Text() + "\n")
 				}
 			}
-			w.Write(buf.Bytes())
+
+			// TODO(moorereason): find a way to handle and surface an error from
+			// Write().
+			w.Write(buf.Bytes()) // nolint:errcheck
 		})
 	}
 }

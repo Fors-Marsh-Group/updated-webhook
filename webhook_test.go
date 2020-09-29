@@ -279,8 +279,15 @@ func killAndWait(cmd *exec.Cmd) {
 		return
 	}
 
-	cmd.Process.Kill()
-	cmd.Wait()
+	err := cmd.Process.Kill()
+	if err != nil {
+		panic(err)
+	}
+
+	err = cmd.Wait()
+	if err != nil {
+		panic(err)
+	}
 }
 
 // webhookEnv returns the process environment without any existing hook

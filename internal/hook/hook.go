@@ -266,8 +266,16 @@ func CheckScalrSignature(r *Request, signingKey string, checkDate bool) (bool, e
 	providedSignature := r.Headers["X-Signature"].(string)
 	dateHeader := r.Headers["Date"].(string)
 	mac := hmac.New(sha1.New, []byte(signingKey))
-	mac.Write(r.Body)
-	mac.Write([]byte(dateHeader))
+	_, err := mac.Write(r.Body)
+	if err != nil {
+		return false, err
+	}
+
+	_, err = mac.Write([]byte(dateHeader))
+	if err != nil {
+		return false, err
+	}
+
 	expectedSignature := hex.EncodeToString(mac.Sum(nil))
 
 	if !hmac.Equal([]byte(providedSignature), []byte(expectedSignature)) {

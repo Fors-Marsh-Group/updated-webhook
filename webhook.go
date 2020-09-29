@@ -558,7 +558,8 @@ func hookHandler(w http.ResponseWriter, r *http.Request) {
 				fmt.Fprint(w, response)
 			}
 		} else {
-			go handleHook(matchedHook, req)
+			// TODO(moorereason): handle and log errors from goroutine.
+			go handleHook(matchedHook, req) // nolint:errcheck
 
 			// Check if a success return code is configured for the hook
 			if matchedHook.SuccessHTTPResponseCode != 0 {
@@ -766,7 +767,10 @@ func watchForFileChange() {
 			} else if event.Op&fsnotify.Remove == fsnotify.Remove {
 				if _, err := os.Stat(event.Name); os.IsNotExist(err) {
 					log.Printf("hooks file %s removed, no longer watching this file for changes, removing hooks that were loaded from it\n", event.Name)
-					(*watcher).Remove(event.Name)
+					err := (*watcher).Remove(event.Name)
+					if err != nil {
+						log.Printf("error removing file watch: %s", err)
+					}
 					removeHooks(event.Name)
 				}
 			} else if event.Op&fsnotify.Rename == fsnotify.Rename {
@@ -774,14 +778,23 @@ func watchForFileChange() {
 				if _, err := os.Stat(event.Name); os.IsNotExist(err) {
 					// file was removed
 					log.Printf("hooks file %s removed, no longer watching this file for changes, and removing hooks that were loaded from it\n", event.Name)
-					(*watcher).Remove(event.Name)
+					err := (*watcher).Remove(event.Name)
+					if err != nil {
+						log.Printf("error removing file watch: %s", err)
+					}
 					removeHooks(event.Name)
 				} else {
 					// file was overwritten
 					log.Printf("hooks file %s overwritten\n", event.Name)
 					reloadHooks(event.Name)
-					(*watcher).Remove(event.Name)
-					(*watcher).Add(event.Name)
+					err := (*watcher).Remove(event.Name)
+					if err != nil {
+						log.Printf("error removing file watch: %s", err)
+					}
+					err = (*watcher).Add(event.Name)
+					if err != nil {
+						log.Printf("error adding file watch: %s", err)
+					}
 				}
 			}
 		case err := <-(*watcher).Errors:
