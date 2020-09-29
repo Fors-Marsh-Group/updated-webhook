@@ -913,19 +913,19 @@ func (r MatchRule) Evaluate(req *Request) (bool, error) {
 			log.Print(`warn: use of deprecated option payload-hash-sha1; use payload-hmac-sha1 instead`)
 			fallthrough
 		case MatchHMACSHA1:
-			_, err := CheckPayloadSignature(req.Body, r.Secret, arg)
+			_, err = CheckPayloadSignature(req.Body, r.Secret, arg)
 			return err == nil, err
 		case MatchHashSHA256:
 			log.Print(`warn: use of deprecated option payload-hash-sha256: use payload-hmac-sha256 instead`)
 			fallthrough
 		case MatchHMACSHA256:
-			_, err := CheckPayloadSignature256(req.Body, r.Secret, arg)
+			_, err = CheckPayloadSignature256(req.Body, r.Secret, arg)
 			return err == nil, err
 		case MatchHashSHA512:
 			log.Print(`warn: use of deprecated option payload-hash-sha512: use payload-hmac-sha512 instead`)
 			fallthrough
 		case MatchHMACSHA512:
-			_, err := CheckPayloadSignature512(req.Body, r.Secret, arg)
+			_, err = CheckPayloadSignature512(req.Body, r.Secret, arg)
 			return err == nil, err
 		}
 	}

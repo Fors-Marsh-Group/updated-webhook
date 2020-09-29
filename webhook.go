@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"mime/multipart"
 	"net"
 	"net/http"
 	"net/url"
@@ -398,7 +399,7 @@ func hookHandler(w http.ResponseWriter, r *http.Request) {
 
 		if firstChar == byte('[') {
 			var arrayPayload interface{}
-			err := decoder.Decode(&arrayPayload)
+			err = decoder.Decode(&arrayPayload)
 			if err != nil {
 				log.Printf("[%s] error parsing JSON array payload %+v\n", req.ID, err)
 			}
@@ -406,14 +407,15 @@ func hookHandler(w http.ResponseWriter, r *http.Request) {
 			req.Payload = make(map[string]interface{}, 1)
 			req.Payload["root"] = arrayPayload
 		} else {
-			err := decoder.Decode(&req.Payload)
+			err = decoder.Decode(&req.Payload)
 			if err != nil {
 				log.Printf("[%s] error parsing JSON payload %+v\n", req.ID, err)
 			}
 		}
 
 	case strings.Contains(req.ContentType, "x-www-form-urlencoded"):
-		fd, err := url.ParseQuery(string(req.Body))
+		var fd url.Values
+		fd, err = url.ParseQuery(string(req.Body))
 		if err != nil {
 			log.Printf("[%s] error parsing form payload %+v\n", req.ID, err)
 		} else {
@@ -475,7 +477,8 @@ func hookHandler(w http.ResponseWriter, r *http.Request) {
 			if parseAsJSON {
 				log.Printf("[%s] parsing multipart form file %q as JSON\n", req.ID, k)
 
-				f, err := v[0].Open()
+				var f multipart.File
+				f, err = v[0].Open()
 				if err != nil {
 					msg := fmt.Sprintf("[%s] error parsing multipart form file: %+v\n", req.ID, err)
 					log.Println(msg)
@@ -624,17 +627,19 @@ func handleHook(h *hook.Hook, r *hook.Request) (string, error) {
 	}
 
 	for i := range files {
-		tmpfile, err := ioutil.TempFile(h.CommandWorkingDirectory, files[i].EnvName)
+		var tmpfile *os.File
+
+		tmpfile, err = ioutil.TempFile(h.CommandWorkingDirectory, files[i].EnvName)
 		if err != nil {
 			log.Printf("[%s] error creating temp file [%s]", r.ID, err)
 			continue
 		}
 		log.Printf("[%s] writing env %s file %s", r.ID, files[i].EnvName, tmpfile.Name())
-		if _, err := tmpfile.Write(files[i].Data); err != nil {
+		if _, err = tmpfile.Write(files[i].Data); err != nil {
 			log.Printf("[%s] error writing file %s [%s]", r.ID, tmpfile.Name(), err)
 			continue
 		}
-		if err := tmpfile.Close(); err != nil {
+		if err = tmpfile.Close(); err != nil {
 			log.Printf("[%s] error closing file %s [%s]", r.ID, tmpfile.Name(), err)
 			continue
 		}
@@ -658,7 +663,7 @@ func handleHook(h *hook.Hook, r *hook.Request) (string, error) {
 	for i := range files {
 		if files[i].File != nil {
 			log.Printf("[%s] removing file %s\n", r.ID, files[i].File.Name())
-			err := os.Remove(files[i].File.Name())
+			err = os.Remove(files[i].File.Name())
 			if err != nil {
 				log.Printf("[%s] error removing file %s [%s]", r.ID, files[i].File.Name(), err)
 			}
