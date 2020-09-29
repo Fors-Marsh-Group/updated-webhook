@@ -566,9 +566,9 @@ type Hook struct {
 	PassFileToCommand                   []Argument      `json:"pass-file-to-command,omitempty"`
 	JSONStringParameters                []Argument      `json:"parse-parameters-as-json,omitempty"`
 	TriggerRule                         *Rules          `json:"trigger-rule,omitempty"`
-	TriggerRuleMismatchHttpResponseCode int             `json:"trigger-rule-mismatch-http-response-code,omitempty"`
+	TriggerRuleMismatchHTTPResponseCode int             `json:"trigger-rule-mismatch-http-response-code,omitempty"`
 	IncomingPayloadContentType          string          `json:"incoming-payload-content-type,omitempty"`
-	SuccessHttpResponseCode             int             `json:"success-http-response-code,omitempty"`
+	SuccessHTTPResponseCode             int             `json:"success-http-response-code,omitempty"`
 	HTTPMethods                         []string        `json:"http-methods"`
 }
 
