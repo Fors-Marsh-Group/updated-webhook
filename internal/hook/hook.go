@@ -30,7 +30,7 @@ import (
 	"github.com/ghodss/yaml"
 )
 
-// Constants used to specify the parameter source
+// Constants used to specify the parameter source.
 const (
 	SourceHeader        string = "header"
 	SourceQuery         string = "url"
@@ -208,7 +208,8 @@ func ValidateMAC(payload []byte, mac hash.Hash, signatures []string) (string, er
 	return actualMAC, e
 }
 
-// CheckPayloadSignature calculates and verifies SHA1 signature of the given payload
+// CheckPayloadSignature calculates and verifies SHA1 signature of the given
+// payload.
 func CheckPayloadSignature(payload []byte, secret, signature string) (string, error) {
 	if secret == "" {
 		return "", errors.New("signature validation secret can not be empty")
@@ -221,7 +222,8 @@ func CheckPayloadSignature(payload []byte, secret, signature string) (string, er
 	return ValidateMAC(payload, hmac.New(sha1.New, []byte(secret)), signatures)
 }
 
-// CheckPayloadSignature256 calculates and verifies SHA256 signature of the given payload
+// CheckPayloadSignature256 calculates and verifies SHA256 signature of the
+// given payload.
 func CheckPayloadSignature256(payload []byte, secret, signature string) (string, error) {
 	if secret == "" {
 		return "", errors.New("signature validation secret can not be empty")
@@ -234,7 +236,8 @@ func CheckPayloadSignature256(payload []byte, secret, signature string) (string,
 	return ValidateMAC(payload, hmac.New(sha256.New, []byte(secret)), signatures)
 }
 
-// CheckPayloadSignature512 calculates and verifies SHA512 signature of the given payload
+// CheckPayloadSignature512 calculates and verifies SHA512 signature of the
+// given payload.
 func CheckPayloadSignature512(payload []byte, secret, signature string) (string, error) {
 	if secret == "" {
 		return "", errors.New("signature validation secret can not be empty")
@@ -339,7 +342,7 @@ func CheckIPWhitelist(remoteAddr, ipRange string) (bool, error) {
 
 // ReplaceParameter replaces parameter value with the passed value in the passed map
 // (please note you should pass pointer to the map, because we're modifying it)
-// based on the passed string
+// based on the passed string.
 func ReplaceParameter(s string, params, value interface{}) bool {
 	if params == nil {
 		return false
@@ -375,7 +378,7 @@ func ReplaceParameter(s string, params, value interface{}) bool {
 	return false
 }
 
-// GetParameter extracts interface{} value based on the passed string
+// GetParameter extracts interface{} value based on the passed string.
 func GetParameter(s string, params interface{}) (interface{}, error) {
 	if params == nil {
 		return nil, errors.New("no parameters")
@@ -453,7 +456,7 @@ func ExtractParameterAsString(s string, params interface{}) (string, error) {
 }
 
 // Argument type specifies the parameter key name and the source it should
-// be extracted from
+// be extracted from.
 type Argument struct {
 	Source       string `json:"source,omitempty"`
 	Name         string `json:"name,omitempty"`
@@ -462,7 +465,7 @@ type Argument struct {
 }
 
 // Get Argument method returns the value for the Argument's key name
-// based on the Argument's source
+// based on the Argument's source.
 func (ha *Argument) Get(r *Request) (string, error) {
 	var source *map[string]interface{}
 	key := ha.Name
@@ -507,13 +510,13 @@ func (ha *Argument) Get(r *Request) (string, error) {
 	return "", errors.New("no source for value retrieval")
 }
 
-// Header is a structure containing header name and it's value
+// Header is a structure containing header name and it's value.
 type Header struct {
 	Name  string `json:"name"`
 	Value string `json:"value"`
 }
 
-// ResponseHeaders is a slice of Header objects
+// ResponseHeaders is a slice of Header objects.
 type ResponseHeaders []Header
 
 func (h *ResponseHeaders) String() string {
@@ -531,7 +534,7 @@ func (h *ResponseHeaders) String() string {
 	return strings.Join(result, ", ")
 }
 
-// Set method appends new Header object from header=value notation
+// Set method appends new Header object from header=value notation.
 func (h *ResponseHeaders) Set(value string) error {
 	splitResult := strings.SplitN(value, "=", 2)
 
@@ -543,7 +546,7 @@ func (h *ResponseHeaders) Set(value string) error {
 	return nil
 }
 
-// HooksFiles is a slice of String
+// HooksFiles is a slice of String.
 type HooksFiles []string
 
 func (h *HooksFiles) String() string {
@@ -554,13 +557,13 @@ func (h *HooksFiles) String() string {
 	return strings.Join(*h, ", ")
 }
 
-// Set method appends new string
+// Set method appends new string.
 func (h *HooksFiles) Set(value string) error {
 	*h = append(*h, value)
 	return nil
 }
 
-// Hook type is a structure containing details for a single hook
+// Hook type is a structure containing details for a single hook.
 type Hook struct {
 	ID                                  string          `json:"id,omitempty"`
 	ExecuteCommand                      string          `json:"execute-command,omitempty"`
@@ -581,7 +584,7 @@ type Hook struct {
 }
 
 // ParseJSONParameters decodes specified arguments to JSON objects and replaces the
-// string with the newly created object
+// string with the newly created object.
 func (h *Hook) ParseJSONParameters(r *Request) []error {
 	errors := make([]error, 0)
 
@@ -634,7 +637,7 @@ func (h *Hook) ParseJSONParameters(r *Request) []error {
 }
 
 // ExtractCommandArguments creates a list of arguments, based on the
-// PassArgumentsToCommand property that is ready to be used with exec.Command()
+// PassArgumentsToCommand property that is ready to be used with exec.Command().
 func (h *Hook) ExtractCommandArguments(r *Request) ([]string, []error) {
 	args := make([]string, 0)
 	errors := make([]error, 0)
@@ -688,7 +691,7 @@ func (h *Hook) ExtractCommandArgumentsForEnv(r *Request) ([]string, []error) {
 	return args, nil
 }
 
-// FileParameter describes a pass-file-to-command instance to be stored as file
+// FileParameter describes a pass-file-to-command instance to be stored as file.
 type FileParameter struct {
 	File    *os.File
 	EnvName string
@@ -735,7 +738,7 @@ func (h *Hook) ExtractCommandArgumentsForFile(r *Request) ([]FileParameter, []er
 	return args, nil
 }
 
-// Hooks is an array of Hook objects
+// Hooks is an array of Hook objects.
 type Hooks []Hook
 
 // LoadFromFile attempts to load hooks from the specified file, which
@@ -774,7 +777,8 @@ func (h *Hooks) LoadFromFile(path string, asTemplate bool) error {
 	return yaml.Unmarshal(file, h)
 }
 
-// Append appends hooks unless the new hooks contain a hook with an ID that already exists
+// Append appends hooks unless the new hooks contain a hook with an ID that
+// already exists.
 func (h *Hooks) Append(other *Hooks) error {
 	for _, hook := range *other {
 		if h.Match(hook.ID) != nil {
@@ -788,7 +792,7 @@ func (h *Hooks) Append(other *Hooks) error {
 }
 
 // Match iterates through Hooks and returns first one that matches the given ID,
-// if no hook matches the given ID, nil is returned
+// if no hook matches the given ID, nil is returned.
 func (h *Hooks) Match(id string) *Hook {
 	for i := range *h {
 		if (*h)[i].ID == id {
@@ -799,7 +803,7 @@ func (h *Hooks) Match(id string) *Hook {
 	return nil
 }
 
-// Rules is a structure that contains one of the valid rule types
+// Rules is a structure that contains one of the valid rule types.
 type Rules struct {
 	And   *AndRule   `json:"and,omitempty"`
 	Or    *OrRule    `json:"or,omitempty"`
@@ -808,7 +812,7 @@ type Rules struct {
 }
 
 // Evaluate finds the first rule property that is not nil and returns the value
-// it evaluates to
+// it evaluates to.
 func (r Rules) Evaluate(req *Request) (bool, error) {
 	switch {
 	case r.And != nil:
@@ -824,10 +828,12 @@ func (r Rules) Evaluate(req *Request) (bool, error) {
 	return false, nil
 }
 
-// AndRule will evaluate to true if and only if all of the ChildRules evaluate to true
+// AndRule will evaluate to true if and only if all of the ChildRules evaluate
+// to true.
 type AndRule []Rules
 
-// Evaluate AndRule will return true if and only if all of ChildRules evaluate to true
+// Evaluate AndRule will return true if and only if all of ChildRules evaluate
+// to true.
 func (r AndRule) Evaluate(req *Request) (bool, error) {
 	res := true
 
@@ -846,10 +852,10 @@ func (r AndRule) Evaluate(req *Request) (bool, error) {
 	return res, nil
 }
 
-// OrRule will evaluate to true if any of the ChildRules evaluate to true
+// OrRule will evaluate to true if any of the ChildRules evaluate to true.
 type OrRule []Rules
 
-// Evaluate OrRule will return true if any of ChildRules evaluate to true
+// Evaluate OrRule will return true if any of ChildRules evaluate to true.
 func (r OrRule) Evaluate(req *Request) (bool, error) {
 	res := false
 
@@ -868,16 +874,18 @@ func (r OrRule) Evaluate(req *Request) (bool, error) {
 	return res, nil
 }
 
-// NotRule will evaluate to true if any and only if the ChildRule evaluates to false
+// NotRule will evaluate to true if any and only if the ChildRule evaluates to
+// false.
 type NotRule Rules
 
-// Evaluate NotRule will return true if and only if ChildRule evaluates to false
+// Evaluate NotRule will return true if and only if ChildRule evaluates to
+// false.
 func (r NotRule) Evaluate(req *Request) (bool, error) {
 	rv, err := Rules(r).Evaluate(req)
 	return !rv, err
 }
 
-// MatchRule will evaluate to true based on the type
+// MatchRule will evaluate to true based on the type.
 type MatchRule struct {
 	Type      string   `json:"type,omitempty"`
 	Regex     string   `json:"regex,omitempty"`
@@ -887,7 +895,7 @@ type MatchRule struct {
 	IPRange   string   `json:"ip-range,omitempty"`
 }
 
-// Constants for the MatchRule type
+// Constants for the MatchRule type.
 const (
 	MatchValue      string = "value"
 	MatchRegex      string = "regex"
@@ -901,7 +909,7 @@ const (
 	ScalrSignature  string = "scalr-signature"
 )
 
-// Evaluate MatchRule will return based on the type
+// Evaluate MatchRule will return based on the type.
 func (r MatchRule) Evaluate(req *Request) (bool, error) {
 	if r.Type == IPWhitelist {
 		return CheckIPWhitelist(req.RawRequest.RemoteAddr, r.IPRange)

@@ -22,7 +22,7 @@ import (
 )
 
 func TestStaticParams(t *testing.T) {
-	// FIXME(moorereason): incorporate this test into TestWebhook.
+	// TODO(moorereason): incorporate this test into TestWebhook.
 	//   Need to be able to execute a binary with a space in the filename.
 	if runtime.GOOS == "windows" {
 		t.Skip("Skipping on Windows")

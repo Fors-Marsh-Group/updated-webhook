@@ -803,7 +803,7 @@ func watchForFileChange() {
 	}
 }
 
-// valuesToMap converts map[string][]string to a map[string]string object
+// valuesToMap converts map[string][]string to a map[string]string object.
 func valuesToMap(values map[string][]string) map[string]interface{} {
 	ret := make(map[string]interface{})
 
