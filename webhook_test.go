@@ -267,6 +267,7 @@ func waitForServer(t *testing.T, url string, status int, timeout time.Duration) 
 		if err != nil {
 			continue
 		}
+		defer res.Body.Close()
 		if res.StatusCode == status {
 			return
 		}
