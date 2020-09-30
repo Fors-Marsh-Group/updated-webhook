@@ -28,7 +28,7 @@ enable = [
   "goimports",
   "golint",
   "goprintffuncname",
-  "gosec",
+  # "gosec",
   "interfacer",
   # "lll",
   "maligned",
